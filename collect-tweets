@@ -1,0 +1,36 @@
+#!/usr/bin/env python
+"""Usage: collect-tweets -q QUERY_TERM -c MONGO_COLLECTION_NAME
+
+-h --help    show this
+-q, --query QUERY_TERM  the search term for the twitter stream filter
+-c --mongo_collection_name the name of the mongo collection to store the tweets in
+
+"""
+import sys
+from multiprocessing import Process
+from twitter_stream import TwitterStream
+from mongo_twitter_consumer import MongoTwitterConsumer
+from docopt import docopt
+
+def start_twitter_stream(query_term):
+    twitter_stream = TwitterStream(query_term)
+
+def start_mongo_consumer(coll_name):
+    consumer = MongoTwitterConsumer(coll_name)
+    consumer.start()
+
+if __name__ == '__main__':
+    QUERY_ARG = '--query'
+    COLL_NAME = '--mongo_collection_name'
+
+    args = docopt(__doc__, argv=None, help=True, version=None, options_first=False)
+
+    query_term = args[QUERY_ARG]
+    coll_name = args[COLL_NAME]
+
+    p1 = Process(target=start_twitter_stream, args=(query_term,))
+    p2 = Process(target=start_mongo_consumer, args=(coll_name,))
+
+    p1.start()
+    p2.start()
+

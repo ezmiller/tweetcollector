@@ -10,6 +10,9 @@ name = "pypi"
 "boto3" = "*"
 twitterapi = "*"
 tweepy = "*"
+pymongo = "*"
+dnspython = "*"
+docopt = "==0.6.2"
 
 
 [dev-packages]
