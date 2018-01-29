@@ -8,8 +8,7 @@ name = "pypi"
 [packages]
 
 "boto3" = "*"
-twitterapi = "*"
-tweepy = "*"
+TwitterAPI = "*"
 pymongo = "*"
 dnspython = "*"
 docopt = "==0.6.2"
