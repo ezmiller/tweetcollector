@@ -1,0 +1,31 @@
+version: "3.1"
+
+secrets:
+  aws_access_key_id:
+    file: ./secrets/AWS_ACCESS_KEY_ID
+  aws_secret_access_key:
+    file: ./secrets/AWS_SECRET_ACCESS_KEY
+  twitter_consumer_key:
+    file: ./secrets/TWITTER_CONSUMER_KEY
+  twitter_consumer_secret:
+    file: ./secrets/TWITTER_CONSUMER_SECRET
+  twitter_access_token:
+    file: ./secrets/TWITTER_ACCESS_TOKEN
+  twitter_access_token_secret:
+    file: ./secrets/TWITTER_ACCESS_TOKEN_SECRET
+  mongo_atlas_pwd:
+    file: ./secrets/MONGO_ATLAS_PWD
+
+services:
+  tweetsaver:
+    build: .
+    command: 'echo "Run with `docker-compose run --service-ports tweetsaver /bin/bash`"'
+    tty: true
+    secrets:
+      - aws_access_key_id
+      - aws_secret_access_key
+      - twitter_consumer_key
+      - twitter_consumer_secret
+      - twitter_access_token
+      - twitter_access_token_secret
+      - mongo_atlas_pwd

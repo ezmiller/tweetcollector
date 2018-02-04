@@ -2,12 +2,22 @@ from TwitterAPI import TwitterAPI
 import os
 import boto3
 import json
+import glob
 import pdb
+
+
+def read_secret(filename):
+    yield open(filename, 'r').readline().replace('\n','')
+
+secrets_path = '/run/secrets/twitter*'
+files = glob.glob(secrets_path)
+secrets = {f.replace('/run/secrets/', ''): read_secret(f) for f in files}
+
 ## twitter credentials
-consumer_key = os.environ.get('CONSUMER_KEY')
-consumer_secret = os.environ.get('CONSUMER_SECRET')
-access_token = os.environ.get('ACCESS_TOKEN')
-access_token_secret = os.environ.get('ACCESS_TOKEN_SECRET')
+CONSUMER_KEY = next(secrets['twitter_consumer_key'])
+CONSUMER_SECRET = next(secrets['twitter_consumer_secret'])
+ACCESS_TOKEN = next(secrets['twitter_access_token'])
+ACCESS_TOKEN_SECRET = next(secrets['twitter_access_token_secret'])
 
 class TwitterStream:
 
@@ -24,8 +34,8 @@ class TwitterStream:
         self.batch_size = batch_size
 
         # setup twitter api
-        self.twitter_api = TwitterAPI(consumer_key, consumer_secret,
-                                      access_token, access_token_secret)
+        self.twitter_api = TwitterAPI(CONSUMER_KEY, CONSUMER_SECRET,
+                                      ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
 
         # setup kinesis client
         self.kinesis = boto3.client('kinesis')
@@ -37,6 +47,10 @@ class TwitterStream:
         print("Starting twitter stream for: {0}, batch size: {1}".format(self.query_term, self.batch_size))
 
         r = self.twitter_api.request('statuses/filter', {'track': self.query_term})
+
+        if r.status_code == 401:
+            print('Uh Oh! The twitter request returned an authorization error [401].')
+            exit()
 
         tweets = []
         count = 0

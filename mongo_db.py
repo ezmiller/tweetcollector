@@ -1,7 +1,8 @@
 import os
 from pymongo import MongoClient
+import pdb
 
-MONGO_ATLAS_PWD = os.environ.get('MONGO_ATLAS_PWD')
+MONGO_ATLAS_PWD = open('/run/secrets/mongo_atlas_pwd', 'r').readline().replace('\n', '')
 
 class MongoDB:
 
