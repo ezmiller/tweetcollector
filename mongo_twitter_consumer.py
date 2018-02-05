@@ -36,7 +36,6 @@ class MongoTwitterConsumer:
         shard_it = pre_shard_it["ShardIterator"]
 
         while not self.stopped:
-            print('ticket')
             out = self.kinesis.get_records(ShardIterator=shard_it, Limit=1)
             shard_it = out["NextShardIterator"]
             if len(out['Records']) > 0:
