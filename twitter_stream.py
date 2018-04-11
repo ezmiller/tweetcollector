@@ -73,8 +73,7 @@ class TwitterStream:
             count += 1
 
             if count == self.batch_size:
-                    # print(tweets)
-                    # sys.stdout.flush()
+                    print(f'Sending batch of {self.batch_size} to stream')
                     self.kinesis.put_records(StreamName=self.stream_name, Records=tweets)
                     count = 0
                     tweets = []
