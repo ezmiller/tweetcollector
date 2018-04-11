@@ -6,18 +6,24 @@
 -c --mongo_collection_name the name of the mongo collection to store the tweets in
 
 """
+import os
 import sys
-from multiprocessing import Process
+import signal
+from time import sleep
+from multiprocessing import Pool
 from twitter_stream import TwitterStream
 from mongo_twitter_consumer import MongoTwitterConsumer
 from docopt import docopt
 
-def start_twitter_stream(query_term):
+def start_twitter_stream(query_term, queue):
     twitter_stream = TwitterStream(query_term)
+    queue.put(twitter_stream)
+    while True:
+        pass
 
-def start_mongo_consumer(coll_name):
-    consumer = MongoTwitterConsumer(coll_name)
-    consumer.start()
+# def start_mongo_consumer(coll_name):
+#     consumer = MongoTwitterConsumer(coll_name)  
+#     consumer.start()
 
 if __name__ == '__main__':
     QUERY_ARG = '--query'
@@ -28,9 +34,18 @@ if __name__ == '__main__':
     query_term = args[QUERY_ARG]
     coll_name = args[COLL_NAME]
 
-    p1 = Process(target=start_twitter_stream, args=(query_term,))
-    p2 = Process(target=start_mongo_consumer, args=(coll_name,))
+    twitter_stream = TwitterStream(query_term)
+    # ToDo: Make the consumer run a process as well...
 
-    p1.start()
-    p2.start()
+    try:
+        twitter_stream.start()
+        while True:
+            pass
+
+    except KeyboardInterrupt:
+        print("Caught KeyboardInterrupt, terminating stream.")
+        twitter_stream.stop()
+        twitter_stream.destroy()
+        print("Bye!")
+
 

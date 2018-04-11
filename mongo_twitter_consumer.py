@@ -9,15 +9,6 @@ from ast import literal_eval
 DB_NAME = 'tweets'
 
 class MongoTwitterConsumer:
-
-    db = None
-    kinesis = None
-
-    shard_id = None
-    collection_name = None
-    stopped = True
-    delay = None
-
     def __init__(self, collection_name, delay = 5):
         self.db = MongoDB()
         self.db.connect(DB_NAME)

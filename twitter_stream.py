@@ -1,10 +1,13 @@
 from TwitterAPI import TwitterAPI
+from multiprocessing import Process
+from time import sleep
+import sys
 import os
 import boto3
 import json
 import glob
+import datetime
 import pdb
-
 
 def read_secret(filename):
     yield open(filename, 'r').readline().replace('\n','')
@@ -21,7 +24,8 @@ ACCESS_TOKEN_SECRET = next(secrets['twitter_access_token_secret'])
 
 class TwitterStream:
 
-    stream_name = 'twitter'
+    process = None
+    stream_name = None
     twitter_api = None
     kinesis = None
     shard_name = None
@@ -37,29 +41,61 @@ class TwitterStream:
         self.twitter_api = TwitterAPI(CONSUMER_KEY, CONSUMER_SECRET,
                                       ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
 
+        tstamp = datetime.datetime.now().timestamp().__str__().split('.')[0]
+        self.stream_name = "twitter_{}".format(tstamp)
+
         # setup kinesis client
         self.kinesis = boto3.client('kinesis')
 
-        # start processing
-        self.go()
+        # create kinesis stream
+        response = self.kinesis.create_stream(
+           StreamName=self.stream_name,
+           ShardCount=1
+        )
 
-    def go(self):
-        print("Starting twitter stream for: {0}, batch size: {1}".format(self.query_term, self.batch_size))
+    def run(self):
+        print("Starting twitter stream for: {0}, batch size: {1}, on stream {2}".format(
+            self.query_term, self.batch_size, self.stream_name))
+        sys.stdout.flush()
 
         r = self.twitter_api.request('statuses/filter', {'track': self.query_term})
 
         if r.status_code == 401:
             print('Uh Oh! The twitter request returned an authorization error [401].')
+            sys.stdout.flush()
             exit()
 
         tweets = []
         count = 0
         for item in r:
-                jsonItem = json.dumps(item)
-                tweets.append({'Data': jsonItem, 'PartitionKey': self.shard_name})
-                count += 1
-                if count == self.batch_size:
-                        self.kinesis.put_records(StreamName="twitter", Records=tweets)
-                        count = 0
-                        tweets = []
+            jsonItem = json.dumps(item)
+            tweets.append({'Data': jsonItem, 'PartitionKey': self.shard_name})
+            count += 1
+
+            if count == self.batch_size:
+                    # print(tweets)
+                    # sys.stdout.flush()
+                    self.kinesis.put_records(StreamName=self.stream_name, Records=tweets)
+                    count = 0
+                    tweets = []
+
+    def start(self):
+        print('Waiting for kinesis stream to become active...', end='', flush=True)
+        while True:
+            response = self.kinesis.describe_stream(StreamName=self.stream_name)
+            if response['StreamDescription']['StreamStatus'] == 'ACTIVE':
+                break
+            print('.', end='', flush=True)
+            sleep(0.5)
+
+        print('ACTIVE!', flush=True)
+
+        self.process = Process(target=self.run, args=())
+        self.process.start()
+
+    def stop(self):
+        self.process.terminate()
+
+    def destroy(self):
+        self.kinesis.delete_stream(StreamName=self.stream_name)
 
