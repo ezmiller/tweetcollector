@@ -17,9 +17,9 @@ secrets:
     file: ./secrets/MONGO_ATLAS_PWD
 
 services:
-  tweetsaver:
+  tweetcollector:
     build: .
-    command: 'echo "Run with `docker-compose run --service-ports tweetsaver /bin/bash`"'
+    command: 'echo "Run with `docker-compose run --service-ports tweetcollector /bin/bash`"'
     tty: true
     secrets:
       - aws_access_key_id
