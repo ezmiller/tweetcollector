@@ -5,12 +5,12 @@ import pdb
 MONGO_ATLAS_PWD = open('/run/secrets/mongo_atlas_pwd', 'r').readline().replace('\n', '')
 
 class MongoDB:
-
-    client = None
-    db = None
+    def __init__(self):
+        self.client = None
+        self.db = None
 
     def connect(self, db_name):
-        print('Establishing mongo client connection.')
+        print(f'Establishing mongo client connection to: {db_name}')
 
         uri = "mongodb+srv://emiller:{}@cluster0-jmgac.mongodb.net/test".format(MONGO_ATLAS_PWD)
 
@@ -26,7 +26,7 @@ class MongoDB:
         print('Done.')
 
     def add_document(self, coll, doc):
-        print("Adding new document to {}".format(coll))
+        print(f'Adding new document to collection: {coll}')
         collection = self.db[coll]
         new_id = collection.insert_one(doc)
         print("New document has id: {}".format(new_id))

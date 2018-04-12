@@ -23,15 +23,6 @@ ACCESS_TOKEN = next(secrets['twitter_access_token'])
 ACCESS_TOKEN_SECRET = next(secrets['twitter_access_token_secret'])
 
 class TwitterStream:
-
-    process = None
-    stream_name = None
-    twitter_api = None
-    kinesis = None
-    shard_name = None
-    query_term = None
-    batch_size = None
-
     def __init__(self, query_term, batch_size = 2):
         self.query_term = query_term
         self.shard_name = query_term
@@ -85,7 +76,7 @@ class TwitterStream:
             if response['StreamDescription']['StreamStatus'] == 'ACTIVE':
                 break
             print('.', end='', flush=True)
-            sleep(0.5)
+            sleep(0.8)
 
         print('ACTIVE!', flush=True)
 

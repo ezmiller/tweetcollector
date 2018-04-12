@@ -21,10 +21,6 @@ def start_twitter_stream(query_term, queue):
     while True:
         pass
 
-# def start_mongo_consumer(coll_name):
-#     consumer = MongoTwitterConsumer(coll_name)  
-#     consumer.start()
-
 if __name__ == '__main__':
     QUERY_ARG = '--query'
     COLL_NAME = '--mongo_collection_name'
@@ -35,15 +31,25 @@ if __name__ == '__main__':
     coll_name = args[COLL_NAME]
 
     twitter_stream = TwitterStream(query_term)
-    # ToDo: Make the consumer run a process as well...
+    mongo_consumer = MongoTwitterConsumer(coll_name)
 
     try:
         twitter_stream.start()
+
+        # Wait for twitter stream to start.
+        print('twitter stream is alive', twitter_stream.process.is_alive())
+        while not twitter_stream.process.is_alive():
+            print('waiting for twitter stream', flush=True)
+            sleep(500)
+
+        mongo_consumer.start(twitter_stream.stream_name)
+
         while True:
             pass
 
     except KeyboardInterrupt:
         print("Caught KeyboardInterrupt, terminating stream.")
+        mongo_consumer.stop()
         twitter_stream.stop()
         twitter_stream.destroy()
         print("Bye!")
