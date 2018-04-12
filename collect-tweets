@@ -15,12 +15,6 @@ from twitter_stream import TwitterStream
 from mongo_twitter_consumer import MongoTwitterConsumer
 from docopt import docopt
 
-def start_twitter_stream(query_term, queue):
-    twitter_stream = TwitterStream(query_term)
-    queue.put(twitter_stream)
-    while True:
-        pass
-
 if __name__ == '__main__':
     QUERY_ARG = '--query'
     COLL_NAME = '--mongo_collection_name'
