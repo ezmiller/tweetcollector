@@ -1,5 +1,7 @@
 # Tweetcollector
 
+**TODO: Add setup instructions**
+
 To run from a shell:
 
 `docker-compose run tweetcollector /bin/bash`
